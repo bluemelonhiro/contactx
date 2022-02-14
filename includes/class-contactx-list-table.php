@@ -10,6 +10,8 @@
 
 class Contactx_List_Table extends WP_List_Table {
 
+    private $is_trash = false;
+
     /**
 	 * 初期化時の設定を行う
 	 */
@@ -38,6 +40,14 @@ class Contactx_List_Table extends WP_List_Table {
 		return $columns;
 	}
 
+    function column_cb($item){
+        return sprintf(
+            '<input type="checkbox" name="%1$s[]" value="%2$s" />',
+            $this->_args['singular'],  
+            $item['ID'],
+        );
+    }
+
     public function column_default( $item, $column_name ) {
         switch ( $column_name ) {
             case 'post_title':
@@ -60,9 +70,13 @@ class Contactx_List_Table extends WP_List_Table {
     }
 
     public function get_bulk_actions() {
-        $actions = array(
-            'delete' => 'Delete',
-        );
+            
+		if ( $this->is_trash ) {
+			$actions['untrash'] = __( '復元' );
+            $actions['delete'] = __( 'Delete Permanently' );
+		} else {
+            $actions['trash'] = __( 'ゴミ箱へ移動' );
+        }
         return $actions;
     }
 
@@ -77,19 +91,58 @@ class Contactx_List_Table extends WP_List_Table {
 
     protected function handle_row_actions( $item, $column_name, $primary )
     {
+        $args = array('post'=>$item['ID'], 'action'=>'edit');
+        $nonce = wp_create_nonce();
+
         if( $column_name === $primary )
         {
-			$actions = array(
-				'edit'   => sprintf( '<a href="?page=%s&action=%s&post=%s">%s</a>', $_REQUEST['page'], 'edit', $item['ID'], __( 'Edit' ) ),
-//                'edit'   => sprintf( '<a href="%s">%s</a>', get_edit_post_link( $item['ID'] ), __( 'Edit' ) ),
-				'delete' => sprintf( '<a href="?page=%s&action=%s&post=%s">%s</a>', $_REQUEST['page'], 'trash', $item['ID'], __( 'ゴミ箱へ移動' ) ),
-//                'delete'   => sprintf( '<a href="%s">%s</a>', get_delete_post_link( $item['ID'] ), __( 'Delete' ) ),
-            );
-            // div class = raw-actions がキモやね
+            $edit_link =  sprintf( '<a href="%s">%s</a>', get_edit_post_link( $item['ID'] ), __( 'Edit' ) );
+            $trash_link = sprintf( '<a href="%s">%s</a>', get_delete_post_link( $item['ID'] ), _x( 'Trash', 'verb' ));
+            $untrash_link = sprintf( '<a href="%s">%s</a>', wp_nonce_url( admin_url( 'post.php?post=' . $item['ID'] . '&amp;action=untrash' ), 'untrash-post_' . $item['ID'] ),  __( 'Restore' ) );
+            $delete_link = sprintf( '<a href="%s">%s</a>', get_delete_post_link( $item['ID'] , '', true ), __( 'Delete Permanently' ) );
+
+            if ( $this->is_trash ) {
+                $actions = array(
+                    'untrash' => $untrash_link,
+                    'delete' => $delete_link,
+                );
+            } else {
+                $actions = array(
+                    'edit' => $edit_link,
+                    'trash' => $trash_link,
+                );              
+            }
+        
             return $this->row_actions( $actions );
         }
 
     }
+
+	protected function get_edit_link( $args, $label, $class = '' ) {
+		$url = add_query_arg( $args, 'post.php' );
+
+		$class_html   = '';
+		$aria_current = '';
+
+		if ( ! empty( $class ) ) {
+			$class_html = sprintf(
+				' class="%s"',
+				esc_attr( $class )
+			);
+
+			if ( 'current' === $class ) {
+				$aria_current = ' aria-current="page"';
+			}
+		}
+
+		return sprintf(
+			'<a href="%s"%s%s>%s</a>',
+			esc_url( $url ),
+			$class_html,
+			$aria_current,
+			$label
+		);
+	}
 
     public function get_post_action() {
         $get_post_action = filter_input( INPUT_GET, 'action' );
@@ -104,8 +157,10 @@ class Contactx_List_Table extends WP_List_Table {
         $get_post_status = filter_input( INPUT_GET, 'post_status' );
 		if ( 'trash' === $get_post_status) {
 			$post_status = 'trash';
+            $this->is_trash = true;
 		} else {
-			$post_status = 'publish';
+			$post_status = 'draft';
+//			$post_status = 'any';
         }
         return $post_status;
     }
@@ -130,7 +185,7 @@ class Contactx_List_Table extends WP_List_Table {
          */
         $this->process_bulk_action();
 
-		$sql = "SELECT ID, post_title, post_content, post_date FROM $wpdb->posts WHERE post_status = %s AND post_type = %s";
+        $sql = "SELECT ID, post_title, post_content, post_date FROM $wpdb->posts WHERE post_status = %s AND post_type = %s";
         $query = $wpdb->prepare( $sql, $post_status, 'contactx_post' );
 		$data = $wpdb->get_results( $query, 'ARRAY_A' );
 
@@ -157,28 +212,27 @@ class Contactx_List_Table extends WP_List_Table {
 	
 	protected function get_views() {
 
-        require_once 'class-contactx-post.php';
 		$ctx_post = new Contactx_Post();
 
         $post_status = $this->get_post_status();   
         $status_links = array();
 
-        $args = array( 'post_status' => 'publish' );
+        $args = array( 'post_status' => 'any' );
         $posts_in_inbox = $ctx_post->count( $args );
 
 		$inbox = sprintf('%s<span class="count">(%s)</span>',
-			__( '受信トレイ' ),
+			__( 'すべて' ),
 			number_format_i18n( $posts_in_inbox )
 		);
 
 		$status_links['inbox'] = sprintf( '<a href="%1$s"%2$s>%3$s</a>',
             esc_url( add_query_arg(
                 array(
-                    'post_status' => 'publish',
+                    'post_status' => 'draft',
                 ),
                 menu_page_url( 'contactx', false )
             ) ),
-			( $post_status == 'publish' ) ? ' class="current"' : '',
+			( $post_status == 'draft' ) ? ' class="current"' : '',
 			$inbox );
 
 		// Trash

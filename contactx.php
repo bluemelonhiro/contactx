@@ -13,9 +13,18 @@ class Contactx {
 	private $wp_list_table;
 
 	public function __construct() {
+
+        if ( ! class_exists( 'WP_List_Table' ) ) {
+            require_once( ABSPATH . 'wp-admin/includes/class-wp-list-table.php' );
+        }
+        require_once 'includes/class-contactx-post.php';
+        require_once 'includes/class-contactx-form.php';
+        require_once 'includes/class-contactx-list-table.php';
+
         add_action( 'admin_menu', array( $this, 'admin_menu' ) );
         add_action( 'admin_init', array( $this, 'register_my_setting' ) );
         add_action( 'admin_print_footer_scripts', array( $this, 'my_admin_footer_script' ) );
+
 
         if ( function_exists( 'register_activation_hook' ) ) {
             register_activation_hook( __FILE__ , 'Contactx::activation' );
@@ -63,14 +72,31 @@ class Contactx {
         register_setting( 'contactx', 'ctx_v3_secretkey' );
     }
 
+    private function doaction() {
+
+        $action = filter_input( INPUT_POST, 'action' );
+        if ( isset( $_POST['action'] ) && check_admin_referer('bulk-posts') && is_array( $_POST['post'] ) ) {
+            foreach ( $_POST['post'] as $id ) {
+                $ctx_post = new Contactx_Post();
+                $ret = $ctx_post->doaction( $id, $action );
+            }
+            if ( $ret ) {
+
+            }
+        }
+    }
+
 	public function load() {
-        require_once 'includes/class-contactx-list-table.php';
+
+        $this->doaction();
+
         $this->wp_list_table = new Contactx_List_Table( array( 'screen'=>self::PROPERTIES_NAME ) );
         $this->wp_list_table->prepare_items();
 
         echo '<div class="wrap">';
         echo '<h2>ContactX Messages</h2>';
-        echo  '<form method="post" id="bulk-action-form">';
+//        echo  '<form method="post" id="contactx-filter" action="'. get_admin_url() . 'post.php?">';
+        echo  '<form method="post" id="contactx-filter" action="">';
         $this->wp_list_table->views(); 
         $this->wp_list_table->display();
         echo '</form>';
@@ -79,7 +105,7 @@ class Contactx {
 
     public function contactx_setting() {
         $message = '';
-        if ( isset( $_POST['submit'] ) ) {
+        if ( isset( $_POST['submit'] ) && check_admin_referer('contactx_setting') ) {
             $message = '<div class="notice notice-success settings-error is-dismissible"><p>設定を保存しました。</p></div>';
         }
 
@@ -116,9 +142,9 @@ class Contactx {
         $str_html .= '<h2>ContactX Setting</h2>';
         $str_html .=  $message;
         $str_html .= '<p>投稿フォームを表示する場合はショートコード[cxform]を使用してください。</p>';
-        $str_html .= '<form id="contactx-recaptcha" method="post" action="">';
-        $str_html .= settings_fields( 'contactx' );
-        $str_html .= do_settings_sections( 'contactx' );       
+//        $str_html .= '<form id="contactx-recaptcha" action="' . get_admin_url() . 'admin.php?page=contactxsetting" method="post">';
+        $str_html .= '<form id="contactx-recaptcha" action="' . menu_page_url( 'contactxsetting', false ). '" method="post">';
+        $str_html .= wp_nonce_field('contactx_setting');
         $str_html .= '<table class="form-table"><tbody>';
         $str_html .= '<tr><th scope="row"><label for="ctx_save_post_data">save_post_data</label></th>';
         $str_html .= '<input type="hidden" name="ctx_save_post_data" value="0">';   
@@ -195,8 +221,14 @@ class Contactx {
 }
 
 
-$contactx_form = new Contactx();
 
+$contactx = new Contactx();
+
+
+add_action( 'init', function() {
+    Contactx_Post::register_post_type();
+	do_action( 'contatx_init' );
+}, 10, 0 );
 
 function show_cxform() {
     $save_post_data = get_option( 'ctx_save_post_data' );
@@ -210,8 +242,16 @@ function show_cxform() {
         'v3_secretkey' => $v3_secretkey,               
     );
 
-    require_once 'includes/class-contactx-form.php';
-    $template = new Contactx_Form( $args );
-    return $template->show();
+    $ctx_form = new Contactx_Form( $args );
+    return $ctx_form->show();
 }
 add_shortcode( 'cxform', 'show_cxform' );
+
+
+function ctx_redirect() {
+    if ( is_admin() ) {
+        wp_redirect( get_admin_url() . 'admin.php?page=contactx' );
+        exit();
+    }
+}
+add_action( 'template_redirect', 'ctx_redirect' );

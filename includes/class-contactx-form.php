@@ -246,7 +246,6 @@ class Contactx_Form {
 
 	private function save_post( $post ) {
 
-        require_once 'class-contactx-post.php';
 		$this->post = new Contactx_Post();
         return $this->post->add_post( $post );
 

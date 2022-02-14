@@ -3,46 +3,34 @@
 class Contactx_Post {
 
     const post_type = 'contactx_post';
-    const post_status = 'publish';
-
+    const post_status = 'draft';
     private $post;
 
-//    public function __construct( $post ) {
 	public function __construct() {
 
-
-        add_action( 'init', array( $this, 'register_post_type' ) ); 
- /*
-		if ( ! empty( $post ) ) {
-
-            $this->post = array(
-                'post_type' => self::post_type,
-                'post_status' => self::post_status,
-                'post_title' => $post['post_title'],
-                'post_content' => $post['post_content'],
-                'post_name' => self::post_type,
-			);
-		}
-*/
 	} 
 
-	public function register_post_type() {
+	public static function register_post_type() {
 
 		register_post_type(
-            self::post_type,
+            'contactx_post',
             array(
-			    'labels' => array(
-                    'name' => self::post_type,
-			    ),
+				'labels' => 'contactx_post',
 				'public' => true,
+				'description' => '',
 				'rewrite' => false,
 			    'query_var' => false,
+				'show_in_rest' => true,
+				'show_in_menu' => false,
+				'supports' => array(
+					'title',
+					'editor',
+				),
 
 		    )
         );
 	}
 
-//    public function add_post() {
 	public function add_post( $post ) {
 		if ( empty( $post ) ) {
 			return;
@@ -94,8 +82,19 @@ class Contactx_Post {
 		return $objs;
 	}
 
-	public function trash() {
-		if ( empty( $this->id ) ) {
+	public function doaction( $id, $action ) {
+		if ( $action === 'trash' ) {
+			$ret = $this->trash( $id );
+		} elseif ( $action === 'untrash' ) {
+			$ret = $this->untrash( $id );
+		} elseif ( $action === 'delete' ) {
+			$ret = $this->delete( $id );
+		}
+		return $ret;
+	}
+
+	private function trash( $id ) {
+		if ( empty( $id ) ) {
 			return;
 		}
 
@@ -103,29 +102,27 @@ class Contactx_Post {
 			return $this->delete();
 		}
 
-		$post = wp_trash_post( $this->id );
+		$post = wp_trash_post( $id );
 
 		return (bool) $post;
 	}
 
-	public function untrash() {
-		if ( empty( $this->id ) ) {
+	private function untrash( $id ) {
+		if ( empty( $id ) ) {
 			return;
 		}
 
-		$post = wp_untrash_post( $this->id );
+		$post = wp_untrash_post( $id );
 
 		return (bool) $post;
 	}
 
-	public function delete() {
-		if ( empty( $this->id ) ) {
+	private function delete( $id ) {
+		if ( empty( $id ) ) {
 			return;
 		}
 
-		if ( $post = wp_delete_post( $this->id, true ) ) {
-			$this->id = 0;
-		}
+		$post = wp_delete_post( $id, true );
 
 		return (bool) $post;
 	}
