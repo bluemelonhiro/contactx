@@ -14,6 +14,7 @@ class Contactx_List_Table extends WP_List_Table {
 
     /**
 	 * 初期化時の設定を行う
+     * @param array $args
 	 */
 	public function __construct( $args = array() ) {
 
@@ -27,8 +28,11 @@ class Contactx_List_Table extends WP_List_Table {
 	}
 
 	/**
+     * prepare_items()から呼び出し
 	 * 表で使用されるカラム情報の連想配列を返す
-	 * @return array
+     * @see Contactx_List_Table::prepare_items()
+     * 
+	 * @return array $columns column items
 	 */
 	public function get_columns() {
 		$columns = array(
@@ -60,6 +64,12 @@ class Contactx_List_Table extends WP_List_Table {
         }
     }
 
+    /**
+     * prepare_items()から呼び出し
+	 * 並び替え可能なカラム$sortable_columnsを配列として設定
+     * @see Contactx_List_Table::prepare_items()
+     * @return array $sortable_columns
+	 */
     public function get_sortable_columns() {
         $sortable_columns = array(
             'post_title' 	=> array('post_title', false), //true means it's already sorted
@@ -153,6 +163,14 @@ class Contactx_List_Table extends WP_List_Table {
         return $post_action;
     }
 
+    /**
+     * prepare_items()から呼び出し
+	 * $_GET変数の'post_status'を取得し、表示するデータのステータス$post_statusに代入
+     * すべて('draft')またはゴミ箱('trash')に区分
+     * 
+     * @see Contactx_List_Table::prepare_items()
+     * @return string $post_status
+	 */
     public function get_post_status() {
         $get_post_status = filter_input( INPUT_GET, 'post_status' );
 		if ( 'trash' === $get_post_status) {
@@ -160,11 +178,19 @@ class Contactx_List_Table extends WP_List_Table {
             $this->is_trash = true;
 		} else {
 			$post_status = 'draft';
+// 'any'では上手くデータ取得出来なかったか？            
 //			$post_status = 'any';
         }
         return $post_status;
     }
 
+    /**
+     * contactx.phpから呼び出し
+	 * データベースから$per_pageで指定した件数のデータの読み込み、
+     * $this->itemsに配列で格納する
+     * 
+     * @see contactx.php
+	 */
     public function prepare_items() {
 		// This is used only if making any database queries
 		global $wpdb; 
@@ -210,6 +236,14 @@ class Contactx_List_Table extends WP_List_Table {
         ) );
     }
 	
+    /**
+     * 親クラスWP_List_Tableのviews()から呼び出し、
+	 * 戻り値$status_links（配列）
+     * テーブルの上部に表示する文字列を生成する
+     * 
+     * @see WP_List_Table::views()
+     * @return array $status_links
+	 */
 	protected function get_views() {
 
 		$ctx_post = new Contactx_Post();
@@ -262,4 +296,30 @@ class Contactx_List_Table extends WP_List_Table {
 
 		return $status_links;
     }
+
+    /**
+     * 親クラスWP_List_Tableのviews()をそのまま実行するので不要だが、
+	 * 分かり易い様に記述しておく
+     * contactx.phpより呼び出し
+     * 最後にテーブル上部のステータス選択を出力する
+     * 出力内容はget_views()で設定
+     * 
+     * @see WP_List_Table::views() contactx.php
+	 */
+    public function views() {
+        parent::views();
+    }
+
+    /**
+     * 親クラスWP_List_Tableのdisplay()をそのまま実行するので不要だが、
+	 * 分かり易い様に記述しておく
+     * contactx.phpより呼び出し
+     * 最後にテーブル表示の内容を出力する
+     * 
+     * @see WP_List_Table::display() contactx.php
+	 */
+    public function display() {
+        parent::display();
+    }
+
 }

@@ -1,4 +1,8 @@
 <?php
+/**
+ * 投稿データを保存するpost_type、'contactx_post'のクラス
+ * contactx.php、class-contactx-form.php、class-contactx-list-table.phpから呼び出される
+ */
 
 class Contactx_Post {
 
@@ -10,16 +14,17 @@ class Contactx_Post {
 
 	} 
 
+	// register_post_type()でpost_typeを登録する
 	public static function register_post_type() {
 
 		register_post_type(
             'contactx_post',
             array(
 				'labels' => 'contactx_post',
-				'public' => true,
+				'public' => true,// 管理メニューに表示
 				'description' => '',
 				'rewrite' => false,
-			    'query_var' => false,
+			  'query_var' => false,
 				'show_in_rest' => true,
 				'show_in_menu' => false,
 				'supports' => array(
@@ -31,6 +36,12 @@ class Contactx_Post {
         );
 	}
 
+  /**
+   * class-contactx-form.phpのsave_post()から呼び出し
+	 *
+   * @see Contactx_Form::save_post()
+   * @return int $post_id
+	 */
 	public function add_post( $post ) {
 		if ( empty( $post ) ) {
 			return;
@@ -45,7 +56,7 @@ class Contactx_Post {
 		);
 
 		$post_id = wp_insert_post( $this->post );
-        return $post_id;
+    return $post_id;
 	}
 
 	public static function count( $args = '' ) {
