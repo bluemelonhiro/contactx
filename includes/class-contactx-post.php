@@ -1,6 +1,6 @@
 <?php
 /**
- * 投稿データを保存するPOST_TYPE、'contactx_post'のクラス
+ * 投稿データを保存するpost_type、'contactx_post'のクラス
  * contactx.php、class-contactx-form.php、class-contactx-list-table.phpから呼び出される
  */
 
