@@ -1,23 +1,23 @@
 <?php
 /**
- * 投稿データを保存するpost_type、'contactx_post'のクラス
+ * 投稿データを保存するPOST_TYPE、'contactx_post'のクラス
  * contactx.php、class-contactx-form.php、class-contactx-list-table.phpから呼び出される
  */
 
 class Contactx_Post {
 
-    const post_type = 'contactx_post';
-    const post_status = 'draft';
+    const POST_TYPE = 'contactx_post';
+    const POST_STATUS = 'draft';
     private $post;
 
 	public function __construct() {
 
 	} 
 
-	// register_post_type()でpost_typeを登録する
-	public static function register_post_type() {
+	// register_POST_TYPE()でPOST_TYPEを登録する
+	public static function register_POST_TYPE() {
 
-		register_post_type(
+		register_POST_TYPE(
             'contactx_post',
             array(
 				'labels' => 'contactx_post',
@@ -48,11 +48,11 @@ class Contactx_Post {
 		}
 
 		$this->post = array(
-            'post_type' => self::post_type,
-            'post_status' => self::post_status,
+            'POST_TYPE' => self::POST_TYPE,
+            'POST_STATUS' => self::POST_STATUS,
             'post_title' => $post['post_title'],
             'post_content' => $post['post_content'],
-            'post_name' => self::post_type,
+            'post_name' => self::POST_TYPE,
 		);
 
 		$post_id = wp_insert_post( $this->post );
@@ -62,8 +62,8 @@ class Contactx_Post {
 	public static function count( $args = '' ) {
 		if ( $args ) {
 			$args = wp_parse_args( $args, array(
-				'post_type' => self::post_type,
-				'post_status' => self::post_status,
+				'POST_TYPE' => self::POST_TYPE,
+				'POST_STATUS' => self::POST_STATUS,
 			) );
 		}
 		$post_count = count( get_posts( $args ) );
@@ -73,8 +73,8 @@ class Contactx_Post {
 
 	public static function find( $args = '' ) {
 		$defaults = array(
-			'post_type' => self::post_type,
-			'post_status' => self::post_status,
+			'POST_TYPE' => self::POST_TYPE,
+			'POST_STATUS' => self::POST_STATUS,
 		);
 
 		$args = wp_parse_args( $args, $defaults );
