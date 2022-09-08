@@ -14,13 +14,13 @@ class Contactx_Post {
 
 	} 
 
-	// register_POST_TYPE()でPOST_TYPEを登録する
-	public static function register_POST_TYPE() {
+	// register_post_type()でpost_typeを登録する
+	public static function register_post_type() {
 
-		register_POST_TYPE(
-            'contactx_post',
-            array(
-				'labels' => 'contactx_post',
+		register_post_type(
+			POST_TYPE,
+      array(
+				'labels' => POST_TYPE,
 				'public' => true,// 管理メニューに表示
 				'description' => '',
 				'rewrite' => false,
@@ -32,8 +32,8 @@ class Contactx_Post {
 					'editor',
 				),
 
-		    )
-        );
+		  )
+    );
 	}
 
   /**
