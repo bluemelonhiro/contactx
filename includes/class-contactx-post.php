@@ -1,6 +1,6 @@
 <?php
 /**
- * 投稿データを保存するpost_type、'contactx_post'のクラス
+ * 投稿データを保存するPOST_TYPE、'contactx_post'のクラス
  * contactx.php、class-contactx-form.php、class-contactx-list-table.phpから呼び出される
  */
 
@@ -14,8 +14,8 @@ class Contactx_Post {
 
 	} 
 
-	// register_post_type()でpost_typeを登録する
-	public static function register_post_type() {
+	// register_POST_TYPE()でPOST_TYPEを登録する
+	public static function register_POST_TYPE() {
 
 		register_post_type(
 			POST_TYPE,
