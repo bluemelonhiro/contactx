@@ -8,13 +8,13 @@ class Contactx_Form {
 
 	// 定数を指定、必要に応じて変更する
 	// 確認画面を表示する、初期値はfalse
-	const show_confirm = false;
+	const SHOW_CONFIRM = false;
 	// お名前テキストボックスの最大値、初期値は60文字
-	const max_sender_name = 60;
+	const MAX_SENDER_NAME = 60;
 	// メールアドレステキストボックスの最大値、初期値は60文字
-	const max_sender_email = 60;
+	const MAX_SENDER_EMAIL = 60;
 	// お問い合わせ内容テキストエリアの最大値、初期値は500文字
-	const max_send_message = 500;
+	const MAX_SEND_MESSAGE = 500;
 
 	// 変数を初期化
 	private $save_post_data = 0; // save post data
@@ -55,7 +55,7 @@ class Contactx_Form {
 	*/
 	private function set_button() {
 		// 確認画面を表示する設定の場合
-		if ( self::show_confirm ) {
+		if ( self::SHOW_CONFIRM ) {
 			// 戻るボタンを表示
 			$this->return_button = '<input type="submit" name="btn_return" id="btn-return" class="edit-button button" value="戻る">';
 			// 確認ボタンを表示
@@ -115,12 +115,12 @@ class Contactx_Form {
 	* ページ遷移用フラッグを設定
 	* @see Contactx_Form::show()
 	* page_flag:0　投稿フォームを表示、戻るボタンから遷移した場合は投稿内容をフォームに表示
-	* page_flag:1　show_confirmがtrueの場合のみ使用、投稿内容確認用の画面を表示する
+	* page_flag:1　SHOW_CONFIRMがtrueの場合のみ使用、投稿内容確認用の画面を表示する
 	* page_flag:2　送信ボタンが押された場合は投稿結果を表示	
 	*/
 	private function set_page_flag() {
 		// 確認画面を表示する設定の場合
-		if ( self::show_confirm ) {
+		if ( self::SHOW_CONFIRM ) {
 			// 確認ボタンが押された場合、page_flag = 1
 			if ( !empty( $_POST['btn_confirm'] ) ) {
 				$this->page_flag = 1;
@@ -188,22 +188,22 @@ class Contactx_Form {
 			if ( $this->sender_name === '' ) {
 				$this->errors[] = 'お名前は必須項目です。';
 			// sender_nameの文字数が最大値を超えている場合
-			} elseif ( mb_strlen( $this->sender_name ) > self::max_sender_name ) {
-				$this->errors[] = 'お名前は' . self::max_sender_name . '文字以内にしてください。';
+			} elseif ( mb_strlen( $this->sender_name ) > self::MAX_SENDER_NAME ) {
+				$this->errors[] = 'お名前は' . self::MAX_SENDER_NAME . '文字以内にしてください。';
 			}
 			// sender_emailの検証
 			if ( $this->sender_email === '' ) {
 				$this->errors[] = 'メールアドレスは必須項目です。';
-			} elseif ( mb_strlen( $this->sender_email ) > self::max_sender_email ) {
-				$this->errors[] = 'メールアドレスは' . self::max_sender_email . '文字以内にしてください。';
+			} elseif ( mb_strlen( $this->sender_email ) > self::MAX_SENDER_EMAIL ) {
+				$this->errors[] = 'メールアドレスは' . self::MAX_SENDER_EMAIL . '文字以内にしてください。';
 			} elseif ( !filter_var( $this->sender_email, FILTER_VALIDATE_EMAIL ) ) {
 				$this->errors[] = '正しいメールアドレスを指定してください。';
 			}
 			// send_messageの検証
 			if ( $this->send_message === '' ) {
 				$this->errors[] = 'お問い合わせ内容は必須項目です。';
-			} elseif ( mb_strlen( $this->send_message ) > self::max_send_message ) {
-				$this->errors[] = 'お問い合わせ内容は' . self::max_send_message . '文字以内にしてください。';
+			} elseif ( mb_strlen( $this->send_message ) > self::MAX_SEND_MESSAGE ) {
+				$this->errors[] = 'お問い合わせ内容は' . self::MAX_SEND_MESSAGE . '文字以内にしてください。';
 			}
 			// recaptchaを使用する設定の場合
 			if ( $this->use_recaptcha ) {
@@ -236,7 +236,7 @@ class Contactx_Form {
 			}
 			// page_flagに0を代入し初期画面を表示する
 			$this->page_flag = 0;
-			if ( self::show_confirm ) {
+			if ( self::SHOW_CONFIRM ) {
 				$this->set_button();		
 				$this->return_button = '';
 				$this->submit_button = '';
@@ -267,13 +267,13 @@ class Contactx_Form {
 		$this->str_html .= '<form id="contact-form" action="" method="post" accept-charset="UTF-8">';
 		$this->str_html .= '<dl>';
 		$this->str_html .= '<dt><label for="sender_name" class="form-required">お名前</label></dt>';
-		$this->str_html .= '<dd><input type="text" name="sender_name" id="sender-name" class="form-required" ' . $this->get_readonly() . ' value="' . esc_html( $this->sender_name ) . '" required="required" size="60" maxlength="' . self::max_sender_name . '"></dd>';
+		$this->str_html .= '<dd><input type="text" name="sender_name" id="sender-name" class="form-required" ' . $this->get_readonly() . ' value="' . esc_html( $this->sender_name ) . '" required="required" size="60" maxlength="' . self::MAX_SENDER_NAME . '"></dd>';
 		$this->str_html .= '<dt><label for="sender_email" class="form-required">メールアドレス</label></dt>';
-		$this->str_html .= '<dt><input type="email" name="sender_email" id="sender-email" class="form-required" ' . $this->get_readonly() . ' value="' . esc_html( $this->sender_email ) .'" required="required" size="60" maxlength="' . self::max_sender_email . '"></dd>';
+		$this->str_html .= '<dd><input type="email" name="sender_email" id="sender-email" class="form-required" ' . $this->get_readonly() . ' value="' . esc_html( $this->sender_email ) .'" required="required" size="60" maxlength="' . self::MAX_SENDER_EMAIL . '"></dd>';
 		$this->str_html .= '<dt><label for="send_message" class="form-required">お問い合わせ内容</label></dt>';
-		$this->str_html .= '<dt><textarea name="send_message" id="send-message" class="form-required" rows="10"  cols="60" required="required" ' . $this->get_readonly() . ' maxlength="' . self::max_send_message . '" placeholder="お問い合わせ内容は' . self::max_send_message . '文字以内でお願いします。">' . esc_textarea( $this->send_message ) . '</textarea></dd>';
+		$this->str_html .= '<dd><textarea name="send_message" id="send-message" class="form-required" rows="10"  cols="60" required="required" ' . $this->get_readonly() . ' maxlength="' . self::MAX_SEND_MESSAGE . '" placeholder="お問い合わせ内容は' . self::MAX_SEND_MESSAGE . '文字以内でお願いします。">' . esc_textarea( $this->send_message ) . '</textarea></dd>';
 		$this->str_html .= '</dl>';
-		$this->str_html .= '<div>';
+		$this->str_html .= '<div class="form-bottom">';
 		$this->str_html .= '<input type="hidden" name="ticket" value="' . $this->ticket .'">';
 		$this->str_html .= $this->return_button;
 		$this->str_html .= $this->confirm_button;
@@ -360,7 +360,7 @@ class Contactx_Form {
 	private function set_recaptcha_script() {
 		$str_script = "";		
 		if ( $this->use_recaptcha ) {			
-			if ( (!self::show_confirm) || (self::show_confirm && $this->page_flag === 2) ) {
+			if ( (!self::SHOW_CONFIRM) || (self::SHOW_CONFIRM && $this->page_flag === 2) ) {
 				$str_script = "<script>";
 				$str_script .= "function onSubmit(token) {";
 				$str_script .= "document.getElementById('contact-form').submit();";

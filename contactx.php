@@ -292,6 +292,10 @@ function show_cxform() {
         'v3_sitekey' => $v3_sitekey,
         'v3_secretkey' => $v3_secretkey,               
     );
+    // recapcha api の読み込み
+    if ($use_recaptcha) {
+        wp_enqueue_script( 'recapcha', 'https://www.google.com/recaptcha/api.js', array(), '', false );
+    }
     // Contactx_Formクラスを生成、引数$argsはプラグインオプション値を
     $ctx_form = new Contactx_Form( $args );
     // 投稿フォームを出力
