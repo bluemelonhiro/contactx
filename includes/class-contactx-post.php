@@ -15,7 +15,7 @@ class Contactx_Post {
 	} 
 
 	// register_POST_TYPE()でPOST_TYPEを登録する
-	public static function register_POST_TYPE() {
+	public static function register_post_type() {
 
 		register_post_type(
 			POST_TYPE,
@@ -48,8 +48,8 @@ class Contactx_Post {
 		}
 
 		$this->post = array(
-            'POST_TYPE' => self::POST_TYPE,
-            'POST_STATUS' => self::POST_STATUS,
+            'post_type' => self::POST_TYPE,
+            'post_status' => self::POST_STATUS,
             'post_title' => $post['post_title'],
             'post_content' => $post['post_content'],
             'post_name' => self::POST_TYPE,
@@ -62,8 +62,8 @@ class Contactx_Post {
 	public static function count( $args = '' ) {
 		if ( $args ) {
 			$args = wp_parse_args( $args, array(
-				'POST_TYPE' => self::POST_TYPE,
-				'POST_STATUS' => self::POST_STATUS,
+				'post_type' => self::POST_TYPE,
+				'post_status' => self::POST_STATUS,
 			) );
 		}
 		$post_count = count( get_posts( $args ) );
